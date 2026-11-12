@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3a"/><stop offset="1" stop-color="#101010"/></linearGradient>
+<linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></linearGradient></defs>
+<rect width="400" height="600" fill="url(#g)"/><polygon points="339,600 399,600 659,0 599,0" fill="#ff3c38" opacity="0.08"/><polygon points="157,600 217,600 477,0 417,0" fill="#ff3c38" opacity="0.13"/><polygon points="108,600 168,600 428,0 368,0" fill="#ff3c38" opacity="0.18"/><polygon points="315,600 375,600 635,0 575,0" fill="#ff3c38" opacity="0.23"/><polygon points="295,600 355,600 615,0 555,0" fill="#ff3c38" opacity="0.28"/><polygon points="120,600 180,600 440,0 380,0" fill="#ff3c38" opacity="0.33"/><polygon points="-41,600 19,600 279,0 219,0" fill="#ff3c38" opacity="0.38"/><circle cx="200" cy="220" r="70" fill="none" stroke="#ff3c38" stroke-width="10"/><rect width="400" height="600" fill="url(#f)"/>
+<text x="200" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" letter-spacing="5" fill="#ff3c38" opacity=".9">CINEBOOK PRESENTS</text>
+<text x="200" y="470" text-anchor="middle" font-family="Impact, 'Arial Black', system-ui, sans-serif" font-weight="900" font-size="52" fill="#fff" letter-spacing="1">JAWAN</text>
+<text x="200" y="545" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" letter-spacing="3" fill="#ff3c38">ACTION · THRILLER</text>
+<text x="200" y="572" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" letter-spacing="2" fill="#fff" opacity=".7">HINDI · 2023</text>
+</svg>

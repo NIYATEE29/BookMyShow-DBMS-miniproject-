@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c1121f"/><stop offset="1" stop-color="#3d0000"/></linearGradient>
+<linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></linearGradient></defs>
+<rect width="400" height="600" fill="url(#g)"/><polygon points="181,600 241,600 501,0 441,0" fill="#fdf0d5" opacity="0.08"/><polygon points="264,600 324,600 584,0 524,0" fill="#fdf0d5" opacity="0.13"/><polygon points="184,600 244,600 504,0 444,0" fill="#fdf0d5" opacity="0.18"/><polygon points="171,600 231,600 491,0 431,0" fill="#fdf0d5" opacity="0.23"/><polygon points="56,600 116,600 376,0 316,0" fill="#fdf0d5" opacity="0.28"/><polygon points="120,600 180,600 440,0 380,0" fill="#fdf0d5" opacity="0.33"/><polygon points="125,600 185,600 445,0 385,0" fill="#fdf0d5" opacity="0.38"/><circle cx="200" cy="220" r="70" fill="none" stroke="#fdf0d5" stroke-width="10"/><rect width="400" height="600" fill="url(#f)"/>
+<text x="200" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" letter-spacing="5" fill="#fdf0d5" opacity=".9">CINEBOOK PRESENTS</text>
+<text x="200" y="470" text-anchor="middle" font-family="Impact, 'Arial Black', system-ui, sans-serif" font-weight="900" font-size="52" fill="#fff" letter-spacing="1">RRR</text>
+<text x="200" y="545" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" letter-spacing="3" fill="#fdf0d5">ACTION · DRAMA</text>
+<text x="200" y="572" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" letter-spacing="2" fill="#fff" opacity=".7">TELUGU · 2022</text>
+</svg>

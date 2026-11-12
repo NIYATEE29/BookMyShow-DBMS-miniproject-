@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a2b0e"/><stop offset="1" stop-color="#2b0f0a"/></linearGradient>
+<linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></linearGradient></defs>
+<rect width="400" height="600" fill="url(#g)"/><polygon points="22,600 82,600 342,0 282,0" fill="#ffb347" opacity="0.08"/><polygon points="-77,600 -17,600 243,0 183,0" fill="#ffb347" opacity="0.13"/><polygon points="302,600 362,600 622,0 562,0" fill="#ffb347" opacity="0.18"/><polygon points="-82,600 -22,600 238,0 178,0" fill="#ffb347" opacity="0.23"/><polygon points="146,600 206,600 466,0 406,0" fill="#ffb347" opacity="0.28"/><polygon points="233,600 293,600 553,0 493,0" fill="#ffb347" opacity="0.33"/><polygon points="-60,600 0,600 260,0 200,0" fill="#ffb347" opacity="0.38"/><circle cx="200" cy="220" r="70" fill="none" stroke="#ffb347" stroke-width="10"/><rect width="400" height="600" fill="url(#f)"/>
+<text x="200" y="40" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" letter-spacing="5" fill="#ffb347" opacity=".9">CINEBOOK PRESENTS</text>
+<text x="200" y="470" text-anchor="middle" font-family="Impact, 'Arial Black', system-ui, sans-serif" font-weight="900" font-size="52" fill="#fff" letter-spacing="1">KANTARA</text>
+<text x="200" y="545" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" letter-spacing="3" fill="#ffb347">ACTION · THRILLER · DRAMA</text>
+<text x="200" y="572" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" letter-spacing="2" fill="#fff" opacity=".7">KANNADA · 2022</text>
+</svg>
