@@ -1,0 +1,14 @@
++--------------+------+
+| tbl          | n    |
++--------------+------+
+| THEATRE      |    3 |
+| SCREEN       |    6 |
+| SEAT         |  300 |
+| MOVIE        |    6 |
+| MOVIE_GENRE  |   13 |
+| SHOWS        |   12 |
+| USERS        | 4212 |
+| BOOKING      |   15 |
+| BOOKING_SEAT |   29 |
+| PAYMENT      |   15 |
++--------------+------+

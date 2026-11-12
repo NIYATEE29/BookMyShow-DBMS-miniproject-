@@ -1,13 +1,12 @@
-# BookMyShow-DBMS-miniproject-
-# BookMyShow — Online Movie Ticket Booking & Theatre Management System
+# 🎬 CineBook — Online Movie Ticket Booking & Theatre Management System
 
 DBMS Mini-Project · PES University · Dept. of CSE · Aug–Dec 2026
 
-**Stack:** MySQL 8.0 (relational core) · Redis 7 (NoSQL – reviews & ratings) · Next.js 14 (web UI + API routes)
+**Stack:** MySQL 8.0 (relational core) · Redis 7 (NoSQL – live seat holds, reviews & ratings) · Next.js 14 (web UI + API routes)
 
 Customers browse shows, pick seats on a live seat map, pay, cancel (auto-refund) and review movies.
 Theatre admins manage movies, schedule shows (with clash detection), see revenue/occupancy reports,
-search customers and moderate reviews. **Role-based access is enforced inside MySQL** with two DB roles.
+search customers and moderate reviews. **Role-based access is enforced inside MySQL** with three DB roles (platform admin, theatre admin, customer).
 
 ---
 
@@ -17,18 +16,19 @@ search customers and moderate reviews. **Role-based access is enforced inside My
 movie_ticket_booking/
 ├── sql/
 │   ├── 01_schema.sql           DDL – 10 tables, PK/FK/UNIQUE/CHECK/DEFAULT/NULL/NOT NULL
-│   ├── 02_programs.sql         2 functions, 3 triggers, 3 procedures, 1 view
+│   ├── 02_programs.sql         2 functions, 4 triggers, 3 procedures, 1 view
 │   ├── 03_seed.sql             sample data (bookings made via the procedure)
 │   ├── 04_bulk_and_index.sql   4,200 rows into USERS + index + EXPLAIN before/after
 │   ├── 05_queries.sql          DML + 11 complex queries (join/nested/correlated/recursive/CTE/having)
-│   └── 06_roles.sql            MySQL roles role_admin / role_customer + 2 login users
+│   └── 06_roles.sql            MySQL roles role_admin / role_theatre / role_customer + 3 login users
 ├── redis/
 │   ├── seed_reviews.sh         creates the Redis review "database" (hashes, sets, sorted set)
+│   ├── holds_demo.sh           live seat-hold demo (SET NX EX, TTL, Lua release)
 │   └── rud_demo.sh             Read / Update / Delete demo (+ Lua script)
 ├── web/                        Next.js 14 app (App Router, JS)
 │   ├── app/login, app/register          auth pages
-│   ├── app/customer/page.js             customer dashboard (3 tabs)
-│   ├── app/admin/page.js                admin dashboard (6 tabs)
+│   ├── app/customer/page.js             customer app (Movies, Cinemas, My Bookings, Profile)
+│   ├── app/admin/page.js                admin app (platform: 6 tabs · theatre admin: 3 tabs)
 │   ├── app/api/**                       REST API routes → MySQL / Redis
 │   ├── lib/db.js                        2 MySQL pools (admin / customer DB accounts)
 │   ├── lib/reviews.js                   Redis data-access layer
@@ -38,10 +38,10 @@ movie_ticket_booking/
     ├── er/er_diagram.png               Chen ER diagram (+ .svg, generator script)
     ├── er/relational_schema.png        relational schema with keys & constraints
     ├── PROJECT_REPORT.md / .pdf        full report (rubric-wise)
-    ├── VIVA_PREP.md                    2 live modifications + viva Q&A
-    ├── GIT_GUIDE.md                    how to push + commit plan for 2 members
     └── screenshots/                    UI screenshots
 ```
+
+**Concurrency / load test:** `node scripts/concurrency_test.js` (output in `docs/sample_outputs/`).
 
 ## 2. Prerequisites (macOS)
 
@@ -109,8 +109,8 @@ Database logins (for the two-terminal RBAC demo): `cine_admin / Admin@123`, `cin
 | 10 | Next.js interface | 3 | `web/app/**` |
 | 11 | Backend / API + DB integration | 2 | `web/app/api/**`, `web/lib/db.js` |
 | 12 | Auth (front-end) + ≥2 roles + RBAC in DB | 4 | login/register, `middleware.js`, `sql/06_roles.sql` |
-| 13 | Documentation, Git/GitHub | 2 | this README, `docs/`, `docs/GIT_GUIDE.md` |
-| 14 | Originality, contribution, modification/viva | 4 | `docs/VIVA_PREP.md`, report §10 |
+| 13 | Documentation, Git/GitHub | 2 | this README, `docs/` |
+| 14 | Originality, contribution, modification/viva | 4 | report §13–14 |
 
 Faculty-specific requirements: **>4,000 rows** in `USERS` + **index on non-PK column** `Last_Name`
 (`04_bulk_and_index.sql`, with EXPLAIN before/after); **only Screen 1 and Screen 2** per theatre

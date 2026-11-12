@@ -1,0 +1,624 @@
+--------------
+-- =====================================================================
+--------------
+
+--------------
+--  File 05 : DML operations + complex queries                  MySQL 8.0
+--------------
+
+--------------
+--  Run as root:   mysql -u root -p movie_ticket_booking < sql/05_queries.sql
+--------------
+
+--------------
+--  (or paste query-by-query in the terminal during the demo)
+--------------
+
+--------------
+-- =====================================================================
+--------------
+
+--------------
+-- #####################################################################
+--------------
+
+--------------
+--  PART A : DML OPERATIONS  (INSERT / UPDATE / DELETE / SELECT)
+--------------
+
+--------------
+-- #####################################################################
+--------------
+
+--------------
+-- A1. INSERT : a new movie with two genres
+--------------
+
+--------------
+INSERT INTO MOVIE (Title, Language, Duration_Min, Release_Date)
+VALUES ('Jawan', 'Hindi', 169, '2023-09-07')
+--------------
+
+--------------
+INSERT INTO MOVIE_GENRE (Movie_ID, Genre)
+VALUES (LAST_INSERT_ID(), 'Action'), (LAST_INSERT_ID(), 'Thriller')
+--------------
+
+--------------
+-- A2. UPDATE : raise the base price of every evening show (after 6 PM) by 10%
+--------------
+
+--------------
+UPDATE SHOWS
+   SET Base_Price = ROUND(Base_Price * 1.10, 2)
+ WHERE HOUR(Show_Time) >= 18
+--------------
+
+--------------
+-- A3. UPDATE : customer changes their last name
+--------------
+
+--------------
+UPDATE USERS SET Last_Name = 'Kumar' WHERE Email = 'rohan@demo.com'
+--------------
+
+--------------
+-- A4. DELETE : remove a genre tag that was added by mistake
+--------------
+
+--------------
+DELETE FROM MOVIE_GENRE WHERE Movie_ID = 6 AND Genre = 'Romance'
+--------------
+
+--------------
+-- A5. DELETE : delete the movie we just inserted (cascades to MOVIE_GENRE)
+--------------
+
+--------------
+DELETE FROM MOVIE WHERE Title = 'Jawan'
+--------------
+
+--------------
+-- A6. Constraint demo (each of these FAILS on purpose – uncomment to show)
+--------------
+
+--------------
+-- INSERT INTO SCREEN (Theatre_ID, Screen_No) VALUES (1, 3);           -- CHECK: only screen 1/2
+--------------
+
+--------------
+-- INSERT INTO USERS (First_Name, Email, Password_Hash) VALUES ('X','nikita@demo.com','x'); -- UNIQUE email
+--------------
+
+--------------
+-- INSERT INTO PAYMENT (Booking_ID, Amount) VALUES (1, 100);            -- UNIQUE: 1:1 booking-payment
+--------------
+
+--------------
+-- INSERT INTO SHOWS (Movie_ID, Screen_ID, Show_Time, Base_Price) VALUES (99, 1, NOW(), 100); -- FK
+--------------
+
+--------------
+-- CALL sp_book_seats(5, 1, 'C5', 'UPI', @x);                           -- seat already sold
+--------------
+
+--------------
+-- #####################################################################
+--------------
+
+--------------
+--  PART B : COMPLEX QUERIES
+--------------
+
+--------------
+-- #####################################################################
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q1. JOIN (4 tables) : full show listing with theatre, screen and
+--------------
+
+--------------
+--     seats left (uses stored function fn_seats_left)
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT sh.Show_ID,
+       m.Title,
+       t.Name              AS Theatre,
+       CONCAT('Screen ', sc.Screen_No) AS Screen,
+       DATE_FORMAT(sh.Show_Time, '%d-%b %H:%i') AS Show_Time,
+       sh.Base_Price,
+       fn_seats_left(sh.Show_ID) AS Seats_Left
+FROM SHOWS sh
+JOIN MOVIE   m  ON m.Movie_ID   = sh.Movie_ID
+JOIN SCREEN  sc ON sc.Screen_ID = sh.Screen_ID
+JOIN THEATRE t  ON t.Theatre_ID = sc.Theatre_ID
+ORDER BY sh.Show_Time
+--------------
+
++---------+--------------+--------------------------------+----------+--------------+------------+------------+
+| Show_ID | Title        | Theatre                        | Screen   | Show_Time    | Base_Price | Seats_Left |
++---------+--------------+--------------------------------+----------+--------------+------------+------------+
+|       1 | Interstellar | Galaxy Cinemas Koramangala     | Screen 1 | 23-Oct 10:00 |     250.00 |         45 |
+|       3 | 3 Idiots     | Galaxy Cinemas Koramangala     | Screen 2 | 23-Oct 11:00 |     200.00 |         46 |
+|       2 | Inception    | Galaxy Cinemas Koramangala     | Screen 1 | 23-Oct 18:30 |     330.00 |         47 |
+|       4 | Kantara      | Galaxy Cinemas Koramangala     | Screen 2 | 23-Oct 19:00 |     242.00 |         48 |
+|       5 | RRR          | Starlight Multiplex Whitefield | Screen 1 | 24-Oct 12:00 |     280.00 |         47 |
+|       7 | Kantara      | Starlight Multiplex Whitefield | Screen 2 | 24-Oct 15:00 |     180.00 |         49 |
+|       6 | Interstellar | Starlight Multiplex Whitefield | Screen 1 | 24-Oct 20:00 |     352.00 |         47 |
+|       9 | Inception    | Regal Screens Jayanagar        | Screen 1 | 25-Oct 13:00 |     240.00 |         48 |
+|      10 | RRR          | Regal Screens Jayanagar        | Screen 1 | 25-Oct 19:30 |     286.00 |         48 |
+|       8 | 3 Idiots     | Starlight Multiplex Whitefield | Screen 2 | 25-Oct 21:00 |     220.00 |         50 |
+|      11 | Interstellar | Regal Screens Jayanagar        | Screen 2 | 26-Oct 16:00 |     230.00 |         47 |
+|      12 | Kantara      | Regal Screens Jayanagar        | Screen 2 | 26-Oct 20:30 |     231.00 |         49 |
++---------+--------------+--------------------------------+----------+--------------+------------+------------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q2. GROUP BY + HAVING + aggregation : theatres whose confirmed
+--------------
+
+--------------
+--     revenue is above Rs 2,250, with booking count and average booking value
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT t.Name                     AS Theatre,
+       COUNT(b.Booking_ID)        AS Bookings,
+       SUM(b.Total_Amount)        AS Revenue,
+       ROUND(AVG(b.Total_Amount), 2) AS Avg_Booking_Value
+FROM THEATRE t
+JOIN SCREEN  sc ON sc.Theatre_ID = t.Theatre_ID
+JOIN SHOWS   sh ON sh.Screen_ID  = sc.Screen_ID
+JOIN BOOKING b  ON b.Show_ID     = sh.Show_ID
+WHERE b.Status = 'CONFIRMED'
+GROUP BY t.Theatre_ID, t.Name
+HAVING SUM(b.Total_Amount) > 2250
+ORDER BY Revenue DESC
+--------------
+
++--------------------------------+----------+---------+-------------------+
+| Theatre                        | Bookings | Revenue | Avg_Booking_Value |
++--------------------------------+----------+---------+-------------------+
+| Galaxy Cinemas Koramangala     |        6 | 4065.00 |            677.50 |
+| Starlight Multiplex Whitefield |        4 | 2260.00 |            565.00 |
++--------------------------------+----------+---------+-------------------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q3. GROUP BY + HAVING : genres that appear in more than one movie
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT g.Genre,
+       COUNT(*)                                   AS Movies,
+       GROUP_CONCAT(m.Title ORDER BY m.Title SEPARATOR ', ') AS Titles
+FROM MOVIE_GENRE g
+JOIN MOVIE m ON m.Movie_ID = g.Movie_ID
+GROUP BY g.Genre
+HAVING COUNT(*) > 1
+ORDER BY Movies DESC
+--------------
+
++----------+--------+--------------------------------------+
+| Genre    | Movies | Titles                               |
++----------+--------+--------------------------------------+
+| Drama    |      4 | 3 Idiots, Interstellar, Kantara, RRR |
+| Action   |      2 | Kantara, RRR                         |
+| Comedy   |      2 | 3 Idiots, Lost in Bengaluru          |
+| Sci-Fi   |      2 | Inception, Interstellar              |
+| Thriller |      2 | Inception, Kantara                   |
++----------+--------+--------------------------------------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q4. NESTED (non-correlated) subquery : movies that have never been
+--------------
+
+--------------
+--     scheduled in any show
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT Movie_ID, Title, Language
+FROM MOVIE
+WHERE Movie_ID NOT IN (SELECT DISTINCT Movie_ID FROM SHOWS)
+--------------
+
++----------+-------------------+----------+
+| Movie_ID | Title             | Language |
++----------+-------------------+----------+
+|        6 | Lost in Bengaluru | Kannada  |
++----------+-------------------+----------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q5. NESTED subquery (2 levels) : customers who booked the most
+--------------
+
+--------------
+--     expensive show(s)
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT DISTINCT u.First_Name, u.Last_Name, u.Email
+FROM USERS u
+JOIN BOOKING b ON b.User_ID = u.User_ID
+WHERE b.Show_ID IN (SELECT Show_ID FROM SHOWS
+                    WHERE Base_Price = (SELECT MAX(Base_Price) FROM SHOWS))
+--------------
+
++------------+-----------+-----------------+
+| First_Name | Last_Name | Email           |
++------------+-----------+-----------------+
+| Nikita     | Mankani   | nikita@demo.com |
++------------+-----------+-----------------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q6. CORRELATED subquery : customers whose spend is above the average
+--------------
+
+--------------
+--     spend of all paying customers (inner query re-runs per user)
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT u.User_ID, u.First_Name, u.Last_Name,
+       (SELECT SUM(b.Total_Amount) FROM BOOKING b
+         WHERE b.User_ID = u.User_ID AND b.Status = 'CONFIRMED') AS Total_Spent
+FROM USERS u
+WHERE (SELECT SUM(b.Total_Amount) FROM BOOKING b
+        WHERE b.User_ID = u.User_ID AND b.Status = 'CONFIRMED')
+      >
+      (SELECT AVG(x.spent) FROM
+         (SELECT SUM(Total_Amount) AS spent FROM BOOKING
+           WHERE Status = 'CONFIRMED' GROUP BY User_ID) x)
+ORDER BY Total_Spent DESC
+--------------
+
++---------+------------+-----------+-------------+
+| User_ID | First_Name | Last_Name | Total_Spent |
++---------+------------+-----------+-------------+
+|       5 | Rahul      | Verma     |     1845.00 |
+|       7 | Arjun      | Nair      |     1590.00 |
+|       4 | Nikita     | Mankani   |     1460.00 |
+|       8 | Kavya      | Reddy     |     1115.00 |
++---------+------------+-----------+-------------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q7. CORRELATED + EXISTS : shows where at least one PREMIUM seat is sold
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT sh.Show_ID, m.Title, sh.Show_Time
+FROM SHOWS sh
+JOIN MOVIE m ON m.Movie_ID = sh.Movie_ID
+WHERE EXISTS (SELECT 1
+                FROM BOOKING_SEAT bs
+                JOIN SEAT s ON s.Screen_ID = bs.Screen_ID
+                           AND s.Row_No    = bs.Row_No
+                           AND s.Seat_No   = bs.Seat_No
+               WHERE bs.Show_ID = sh.Show_ID
+                 AND s.Seat_Type = 'PREMIUM')
+--------------
+
++---------+--------------+---------------------+
+| Show_ID | Title        | Show_Time           |
++---------+--------------+---------------------+
+|       1 | Interstellar | 2026-10-23 10:00:00 |
+|       2 | Inception    | 2026-10-23 18:30:00 |
+|       5 | RRR          | 2026-10-24 12:00:00 |
+|       9 | Inception    | 2026-10-25 13:00:00 |
+|      12 | Kantara      | 2026-10-26 20:30:00 |
++---------+--------------+---------------------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q8. RECURSIVE CTE : referral chain starting from Nikita
+--------------
+
+--------------
+--     (uses the recursive relationship USERS.Referred_By -> USERS)
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+WITH RECURSIVE referral_tree AS (
+    SELECT User_ID, First_Name, Referred_By, 0 AS Level,
+           CAST(First_Name AS CHAR(200)) AS Path
+    FROM USERS
+    WHERE Email = 'nikita@demo.com'
+  UNION ALL
+    SELECT u.User_ID, u.First_Name, u.Referred_By, rt.Level + 1,
+           CONCAT(rt.Path, ' -> ', u.First_Name)
+    FROM USERS u
+    JOIN referral_tree rt ON u.Referred_By = rt.User_ID
+)
+SELECT User_ID, First_Name, Level, Path
+FROM referral_tree
+ORDER BY Level, User_ID
+--------------
+
++---------+------------+-------+--------------------------------------------+
+| User_ID | First_Name | Level | Path                                       |
++---------+------------+-------+--------------------------------------------+
+|       4 | Nikita     |     0 | Nikita                                     |
+|       5 | Rahul      |     1 | Nikita -> Rahul                            |
+|       9 | Priya      |     1 | Nikita -> Priya                            |
+|       6 | Sneha      |     2 | Nikita -> Rahul -> Sneha                   |
+|       7 | Arjun      |     3 | Nikita -> Rahul -> Sneha -> Arjun          |
+|       8 | Kavya      |     4 | Nikita -> Rahul -> Sneha -> Arjun -> Kavya |
++---------+------------+-------+--------------------------------------------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q9. NON-RECURSIVE CTE + window function : best-selling movie in
+--------------
+
+--------------
+--     every theatre (by tickets sold)
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+WITH tickets AS (
+    SELECT t.Name AS Theatre, m.Title, COUNT(*) AS Tickets
+    FROM BOOKING_SEAT bs
+    JOIN SHOWS   sh ON sh.Show_ID    = bs.Show_ID
+    JOIN MOVIE   m  ON m.Movie_ID    = sh.Movie_ID
+    JOIN SCREEN  sc ON sc.Screen_ID  = sh.Screen_ID
+    JOIN THEATRE t  ON t.Theatre_ID  = sc.Theatre_ID
+    GROUP BY t.Name, m.Title
+),
+ranked AS (
+    SELECT *, RANK() OVER (PARTITION BY Theatre ORDER BY Tickets DESC) AS rnk
+    FROM tickets
+)
+SELECT Theatre, Title, Tickets FROM ranked WHERE rnk = 1
+--------------
+
++--------------------------------+--------------+---------+
+| Theatre                        | Title        | Tickets |
++--------------------------------+--------------+---------+
+| Galaxy Cinemas Koramangala     | Interstellar |       5 |
+| Regal Screens Jayanagar        | Interstellar |       3 |
+| Starlight Multiplex Whitefield | RRR          |       3 |
+| Starlight Multiplex Whitefield | Interstellar |       3 |
++--------------------------------+--------------+---------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q10. LEFT JOIN + aggregation : occupancy % of every show
+--------------
+
+--------------
+--      (shows with zero bookings still appear thanks to LEFT JOIN)
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT sh.Show_ID, m.Title,
+       COUNT(bs.Seat_No)                                   AS Sold,
+       (SELECT COUNT(*) FROM SEAT s WHERE s.Screen_ID = sh.Screen_ID) AS Capacity,
+       ROUND(100 * COUNT(bs.Seat_No) /
+             (SELECT COUNT(*) FROM SEAT s WHERE s.Screen_ID = sh.Screen_ID), 1) AS Occupancy_Pct
+FROM SHOWS sh
+JOIN MOVIE m ON m.Movie_ID = sh.Movie_ID
+LEFT JOIN BOOKING_SEAT bs ON bs.Show_ID = sh.Show_ID
+GROUP BY sh.Show_ID, m.Title, sh.Screen_ID
+ORDER BY Occupancy_Pct DESC
+--------------
+
++---------+--------------+------+----------+---------------+
+| Show_ID | Title        | Sold | Capacity | Occupancy_Pct |
++---------+--------------+------+----------+---------------+
+|       1 | Interstellar |    5 |       50 |          10.0 |
+|       3 | 3 Idiots     |    4 |       50 |           8.0 |
+|       2 | Inception    |    3 |       50 |           6.0 |
+|       5 | RRR          |    3 |       50 |           6.0 |
+|       6 | Interstellar |    3 |       50 |           6.0 |
+|      11 | Interstellar |    3 |       50 |           6.0 |
+|       4 | Kantara      |    2 |       50 |           4.0 |
+|       9 | Inception    |    2 |       50 |           4.0 |
+|      10 | RRR          |    2 |       50 |           4.0 |
+|       7 | Kantara      |    1 |       50 |           2.0 |
+|      12 | Kantara      |    1 |       50 |           2.0 |
+|       8 | 3 Idiots     |    0 |       50 |           0.0 |
++---------+--------------+------+----------+---------------+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+-- Q11. Payment summary by method (GROUP BY + conditional aggregation)
+--------------
+
+--------------
+-- ---------------------------------------------------------------------
+--------------
+
+--------------
+SELECT Method,
+       COUNT(*)                                   AS Payments,
+       SUM(CASE WHEN Status = 'PAID'     THEN Amount ELSE 0 END) AS Collected,
+       SUM(CASE WHEN Status = 'REFUNDED' THEN Amount ELSE 0 END) AS Refunded
+FROM PAYMENT
+GROUP BY Method
+--------------
+
++--------+----------+-----------+----------+
+| Method | Payments | Collected | Refunded |
++--------+----------+-----------+----------+
+| UPI    |        9 |   4010.00 |   500.00 |
+| CARD   |        4 |   3240.00 |     0.00 |
+| CASH   |        2 |   1320.00 |     0.00 |
++--------+----------+-----------+----------+
+--------------
+-- #####################################################################
+--------------
+
+--------------
+--  PART C : CALLING THE PROGRAMS (procedure / function / trigger demo)
+--------------
+
+--------------
+-- #####################################################################
+--------------
+
+--------------
+-- C1. Function
+--------------
+
+--------------
+SELECT fn_seats_left(1) AS seats_left_show_1,
+       fn_seat_price(1, 1, 'E', 1) AS premium_price,
+       fn_seat_price(1, 1, 'A', 1) AS regular_price
+--------------
+
++-------------------+---------------+---------------+
+| seats_left_show_1 | premium_price | regular_price |
++-------------------+---------------+---------------+
+|                45 |        375.00 |        250.00 |
++-------------------+---------------+---------------+
+--------------
+-- C2. Procedure: Priya books 2 seats (1 regular + 1 premium) for show 3
+--------------
+
+--------------
+CALL sp_book_seats(9, 3, 'A1,E1', 'UPI', @new_booking)
+--------------
+
+--------------
+SELECT @new_booking AS booking_id
+--------------
+
++------------+
+| booking_id |
++------------+
+|         16 |
++------------+
+--------------
+-- Trigger 2 computed Total_Amount automatically: 200 + 300 = 500
+--------------
+
+--------------
+SELECT * FROM BOOKING WHERE Booking_ID = @new_booking
+--------------
+
++------------+---------+---------+---------------------+-----------+--------------+
+| Booking_ID | User_ID | Show_ID | Booked_At           | Status    | Total_Amount |
++------------+---------+---------+---------------------+-----------+--------------+
+|         16 |       9 |       3 | 2026-10-22 19:19:18 | CONFIRMED |       500.00 |
++------------+---------+---------+---------------------+-----------+--------------+
+--------------
+SELECT * FROM PAYMENT WHERE Booking_ID = @new_booking
+--------------
+
++------------+------------+--------+--------+--------+---------------------+
+| Payment_ID | Booking_ID | Amount | Method | Status | Paid_At             |
++------------+------------+--------+--------+--------+---------------------+
+|         16 |         16 | 500.00 | UPI    | PAID   | 2026-10-22 19:19:18 |
++------------+------------+--------+--------+--------+---------------------+
+--------------
+-- C3. Procedure + Trigger 3: cancel it -> payment REFUNDED, seats freed
+--------------
+
+--------------
+CALL sp_cancel_booking(@new_booking, 9)
+--------------
+
+--------------
+SELECT b.Booking_ID, b.Status, p.Status AS Payment_Status,
+       (SELECT COUNT(*) FROM BOOKING_SEAT WHERE Booking_ID = b.Booking_ID) AS Seats_Held
+FROM BOOKING b JOIN PAYMENT p ON p.Booking_ID = b.Booking_ID
+WHERE b.Booking_ID = @new_booking
+--------------
+
++------------+-----------+----------------+------------+
+| Booking_ID | Status    | Payment_Status | Seats_Held |
++------------+-----------+----------------+------------+
+|         16 | CANCELLED | REFUNDED       |          0 |
++------------+-----------+----------------+------------+
+--------------
+-- C4. Procedure: admin adds a show; second call clashes and is rejected
+--------------
+
+--------------
+CALL sp_add_show(6, 2, TIMESTAMP(CURDATE() + INTERVAL 5 DAY, '10:00:00'), 199, @s)
+--------------
+
+--------------
+SELECT @s AS new_show_id
+--------------
+
++-------------+
+| new_show_id |
++-------------+
+|          13 |
++-------------+
+--------------
+-- CALL sp_add_show(1, 2, TIMESTAMP(CURDATE() + INTERVAL 5 DAY, '11:00:00'), 199, @s);  -- ERROR: Screen is busy
+--------------
+

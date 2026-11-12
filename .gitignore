@@ -1,0 +1,9 @@
+.DS_Store
+node_modules
+.next
+.env.local
+_to_delete/
+docs/screenshots_old_oct/
+web/uploads/
+*.tgz
+

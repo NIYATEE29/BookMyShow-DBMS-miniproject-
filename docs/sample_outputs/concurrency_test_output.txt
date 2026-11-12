@@ -1,0 +1,45 @@
+$ node scripts/concurrency_test.js   # run on 12 Nov 2026, MySQL 8.0.46 + Redis 7
+
+====================================================================
+ T1  50 customers book the SAME seat at the SAME time (MySQL)
+====================================================================
+  attempts            : 50   (show 8, seat C5)
+  succeeded           : 1
+  rejected            : 49   {"ER_DUP_ENTRY":49}
+  rows left in DB     : BOOKING=1  BOOKING_SEAT=1  PAYMENT=1
+  time                : 92 ms
+  RESULT              : PASS – no double booking, failed attempts fully rolled back
+
+====================================================================
+ T2  50 customers HOLD the same seat at the same time (Redis)
+====================================================================
+  attempts            : 50   (key cine:hold:13:D7)
+  holds granted       : 1
+  holder / TTL        : user 4213 / 300 s
+  time                : 3 ms
+  RESULT              : PASS – SET NX is atomic, one winner
+
+====================================================================
+ T3  Throughput – 500 bookings (10 shows x 50 seats) on a 10-connection pool
+====================================================================
+  bookings requested  : 500
+  bookings committed  : 500   (failed: 0)
+  shows now sold out  : 10 / 10
+  total time          : 334 ms
+  throughput          : 1497 bookings/second  (each = 1 transaction: BOOKING + seat + PAYMENT + 2 triggers)
+
+====================================================================
+ T4  Two cancels of the SAME booking at the same time (row lock)
+====================================================================
+  booking             : 69
+  cancel #1           : OK
+  cancel #2           : REJECTED – Booking already cancelled
+  final state         : Booking CANCELLED, Payment REFUNDED
+  RESULT              : PASS – refunded exactly once
+
+====================================================================
+ Clean-up
+====================================================================
+  test bookings removed : 501
+  DB back to original   : yes (BOOKING 15, PAYMENT 15, BOOKING_SEAT 29)
+

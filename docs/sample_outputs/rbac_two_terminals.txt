@@ -1,0 +1,40 @@
+### TAB 2 — cine_admin
++----------------------+------------------+
+| CURRENT_USER()       | CURRENT_ROLE()   |
++----------------------+------------------+
+| cine_admin@localhost | `role_admin`@`%` |
++----------------------+------------------+
++----------+
+| inserted |
++----------+
+|        1 |
++----------+
++---------+
+| deleted |
++---------+
+|       1 |
++---------+
+
+### TAB 3 — cine_customer
++-------------------------+---------------------+
+| CURRENT_USER()          | CURRENT_ROLE()      |
++-------------------------+---------------------+
+| cine_customer@localhost | `role_customer`@`%` |
++-------------------------+---------------------+
++---------+--------------+----------------------------+------------+
+| Show_ID | Title        | Theatre                    | Seats_Left |
++---------+--------------+----------------------------+------------+
+|       1 | Interstellar | Galaxy Cinemas Koramangala |         45 |
+|       2 | Inception    | Galaxy Cinemas Koramangala |         47 |
+|       3 | 3 Idiots     | Galaxy Cinemas Koramangala |         46 |
++---------+--------------+----------------------------+------------+
+mysql> INSERT INTO MOVIE (Title, Language, Duration_Min) VALUES ('Hack','English',100);
+ERROR 1142 (42000) at line 1: INSERT command denied to user 'cine_customer'@'localhost' for table 'MOVIE'
+mysql> UPDATE BOOKING SET Total_Amount=0 WHERE Booking_ID=1;
+ERROR 1142 (42000) at line 1: UPDATE command denied to user 'cine_customer'@'localhost' for table 'BOOKING'
+mysql> UPDATE USERS SET Role='ADMIN' WHERE User_ID=10;
+ERROR 1142 (42000) at line 1: UPDATE command denied to user 'cine_customer'@'localhost' for table 'USERS'
+mysql> UPDATE SHOWS SET Base_Price = 1 WHERE Show_ID = 1;
+ERROR 1142 (42000) at line 1: UPDATE command denied to user 'cine_customer'@'localhost' for table 'SHOWS'
+mysql> DROP TABLE PAYMENT;
+ERROR 1142 (42000) at line 1: DROP command denied to user 'cine_customer'@'localhost' for table 'PAYMENT'

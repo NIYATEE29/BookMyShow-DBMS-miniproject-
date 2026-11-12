@@ -1,0 +1,45 @@
+$ bash redis/holds_demo.sh   (empty line = (nil) in an interactive terminal)
+========== 1. Nikita (user 4) taps seat C5 -> hold it for 5 minutes ==========
+
+redis> SET cine:hold:1:C5 4 NX EX 300
+OK
+
+========== 2. Rahul (user 5) taps the SAME seat a moment later ==========
+
+redis> SET cine:hold:1:C5 5 NX EX 300
+
+
+redis> GET cine:hold:1:C5
+4
+
+========== 3. Hold expires on its own (TTL) ==========
+
+redis> TTL cine:hold:1:C5
+300
+
+redis> TTL cine:hold:1:C5
+298
+
+========== 4. Safe release (Lua compare-and-delete) ==========
+
+redis> EVAL <release-lua> 1 cine:hold:1:C5 5      # Rahul tries to release Nikita's hold
+0
+
+redis> EVAL <release-lua> 1 cine:hold:1:C5 4      # Nikita pays / closes the seat map
+1
+
+redis> EXISTS cine:hold:1:C5
+0
+
+========== 5. What the seat map reads every 4 seconds ==========
+
+redis> MGET cine:hold:1:A1 cine:hold:1:A2 cine:hold:1:A3
+4
+4
+
+
+redis> KEYS cine:hold:1:*
+cine:hold:1:A1
+cine:hold:1:A2
+
+(demo keys cleaned up)

@@ -1,0 +1,98 @@
+================ READ ================
+
+redis> HGETALL cine:review:1:4
+movie_id
+1
+user_id
+4
+user_name
+Nikita
+rating
+5
+comment
+Mind-bending visuals, the docking scene is unreal.
+created_at
+2026-10-22 19:19:19
+updated_at
+2026-10-22 19:19:19
+
+redis> SMEMBERS cine:movie:1:reviews
+cine:review:1:7
+cine:review:1:4
+cine:review:1:5
+
+redis> HMGET cine:review:1:5 user_name rating comment
+Rahul
+4
+Long but worth it. Watch on the biggest screen.
+
+redis> SMEMBERS cine:user:5:reviews
+cine:review:4:5
+cine:review:1:5
+
+redis> ZREVRANGE cine:top_rated 0 2 WITHSCORES
+1
+4.666666666666667
+5
+4.5
+3
+4.5
+
+redis> ZSCORE cine:top_rated 4
+3.5
+
+================ UPDATE ================
+
+redis> HSET cine:review:4:5 rating 5 comment Second watch - finally understood it. Masterpiece. updated_at 2026-10-22 19:19:19
+0
+
+redis> HGETALL cine:review:4:5
+movie_id
+4
+user_id
+5
+user_name
+Rahul
+rating
+5
+comment
+Second watch - finally understood it. Masterpiece.
+created_at
+2026-10-22 19:19:19
+updated_at
+2026-10-22 19:19:19
+
+redis> EVAL <recalc-average lua> 1 cine:movie:4:reviews 4
+4.5
+
+redis> ZSCORE cine:top_rated 4
+4.5
+
+================ DELETE ================
+
+redis> DEL cine:review:2:11
+1
+
+redis> SREM cine:movie:2:reviews cine:review:2:11
+1
+
+redis> SREM cine:user:11:reviews cine:review:2:11
+1
+
+redis> EVAL <recalc-average lua> 1 cine:movie:2:reviews 2
+5
+
+redis> EXISTS cine:review:2:11
+0
+
+redis> ZREVRANGE cine:top_rated 0 -1 WITHSCORES
+2
+5
+1
+4.666666666666667
+5
+4.5
+4
+4.5
+3
+4.5

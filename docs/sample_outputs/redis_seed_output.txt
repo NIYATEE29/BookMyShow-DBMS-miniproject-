@@ -1,0 +1,15 @@
+== clearing old cine:* keys
+== CREATE : inserting reviews
+== done. Summary:
+total review hashes : 11
+top rated (movieId, avg):
+1
+4.666666666666667
+5
+4.5
+3
+4.5
+2
+4.5
+4
+3.5

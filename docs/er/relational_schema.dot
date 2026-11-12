@@ -1,0 +1,118 @@
+// Relational schema diagram:  dot -Tsvg relational_schema.dot -o relational_schema.svg
+digraph schema {
+  graph [rankdir=LR, fontname="Helvetica", nodesep=0.35, ranksep=0.9, splines=true, bgcolor="white",
+         label=<<B>Relational Schema – movie_ticket_booking</B><BR/><FONT POINT-SIZE="11">PK = underlined · FK = italic + arrow to referenced table · UQ = unique · CK = check · DF = default</FONT>>,
+         labelloc=t, fontsize=20];
+  node  [shape=plain, fontname="Helvetica", fontsize=11];
+  edge  [color="#2f5fb3", arrowhead=normal, arrowsize=0.8, penwidth=1.3];
+
+  THEATRE [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#b3541e">
+    <TR><TD BGCOLOR="#b3541e" COLSPAN="2"><FONT COLOR="white"><B>THEATRE</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Theatre_ID"><U>Theatre_ID</U></TD><TD ALIGN="LEFT" PORT="Theatre_ID_out">INT PK AI</TD></TR>
+    <TR><TD ALIGN="LEFT">Name</TD><TD ALIGN="LEFT">VARCHAR(80) NN</TD></TR>
+    <TR><TD ALIGN="LEFT">City</TD><TD ALIGN="LEFT">VARCHAR(40) NN DF 'Bengaluru'</TD></TR>
+    <TR><TD ALIGN="LEFT">Address</TD><TD ALIGN="LEFT">VARCHAR(200) NULL</TD></TR>
+    <TR><TD ALIGN="LEFT" COLSPAN="2" BGCOLOR="#fff7e6"><FONT POINT-SIZE="9">UQ(Name, City)</FONT></TD></TR>
+  </TABLE>>];
+
+  USERS [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#b3541e">
+    <TR><TD BGCOLOR="#b3541e" COLSPAN="2"><FONT COLOR="white"><B>USERS</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="User_ID"><U>User_ID</U></TD><TD ALIGN="LEFT" PORT="User_ID_out">INT PK AI</TD></TR>
+    <TR><TD ALIGN="LEFT">First_Name</TD><TD ALIGN="LEFT">VARCHAR(40) NN</TD></TR>
+    <TR><TD ALIGN="LEFT">Last_Name</TD><TD ALIGN="LEFT">VARCHAR(40) NULL</TD></TR>
+    <TR><TD ALIGN="LEFT">Email</TD><TD ALIGN="LEFT">VARCHAR(100) NN UQ CK</TD></TR>
+    <TR><TD ALIGN="LEFT">Password_Hash</TD><TD ALIGN="LEFT">VARCHAR(100) NN</TD></TR>
+    <TR><TD ALIGN="LEFT">Role</TD><TD ALIGN="LEFT">VARCHAR(15) NN DF 'CUSTOMER' CK</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Theatre_ID"><I>Theatre_ID</I></TD><TD ALIGN="LEFT" PORT="Theatre_ID_out">INT NULL FK</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Referred_By"><I>Referred_By</I></TD><TD ALIGN="LEFT" PORT="Referred_By_out">INT NULL FK (self)</TD></TR>
+    <TR><TD ALIGN="LEFT">Created_At</TD><TD ALIGN="LEFT">DATETIME DF NOW</TD></TR>
+    <TR><TD ALIGN="LEFT" COLSPAN="2" BGCOLOR="#fff7e6"><FONT POINT-SIZE="9">CK Role IN(ADMIN,THEATRE_ADMIN,CUSTOMER) · CK THEATRE_ADMIN ⇔ Theatre_ID NOT NULL<BR ALIGN="LEFT"/>INDEX idx_users_last_name(Last_Name)</FONT></TD></TR>
+  </TABLE>>];
+
+  SCREEN [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#b3541e">
+    <TR><TD BGCOLOR="#b3541e" COLSPAN="2"><FONT COLOR="white"><B>SCREEN</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Screen_ID"><U>Screen_ID</U></TD><TD ALIGN="LEFT" PORT="Screen_ID_out">INT PK AI</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Theatre_ID"><I>Theatre_ID</I></TD><TD ALIGN="LEFT" PORT="Theatre_ID_out">INT NN FK</TD></TR>
+    <TR><TD ALIGN="LEFT">Screen_No</TD><TD ALIGN="LEFT">TINYINT NN CK IN(1,2)</TD></TR>
+    <TR><TD ALIGN="LEFT" COLSPAN="2" BGCOLOR="#fff7e6"><FONT POINT-SIZE="9">UQ(Theatre_ID, Screen_No)</FONT></TD></TR>
+  </TABLE>>];
+
+  SEAT [label=<<TABLE BORDER="2" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#b3541e">
+    <TR><TD BGCOLOR="#b3541e" COLSPAN="2"><FONT COLOR="white"><B>SEAT</B> (weak)</FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Screen_ID"><U><I>Screen_ID</I></U></TD><TD ALIGN="LEFT" PORT="Screen_ID_out">INT PK, FK</TD></TR>
+    <TR><TD ALIGN="LEFT"><U>Row_No</U></TD><TD ALIGN="LEFT">CHAR(1) PK CK A-Z</TD></TR>
+    <TR><TD ALIGN="LEFT"><U>Seat_No</U></TD><TD ALIGN="LEFT">TINYINT PK CK 1-30</TD></TR>
+    <TR><TD ALIGN="LEFT">Seat_Type</TD><TD ALIGN="LEFT">VARCHAR(10) DF 'REGULAR' CK</TD></TR>
+  </TABLE>>];
+
+  MOVIE [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#b3541e">
+    <TR><TD BGCOLOR="#b3541e" COLSPAN="2"><FONT COLOR="white"><B>MOVIE</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Movie_ID"><U>Movie_ID</U></TD><TD ALIGN="LEFT" PORT="Movie_ID_out">INT PK AI</TD></TR>
+    <TR><TD ALIGN="LEFT">Title</TD><TD ALIGN="LEFT">VARCHAR(100) NN</TD></TR>
+    <TR><TD ALIGN="LEFT">Language</TD><TD ALIGN="LEFT">VARCHAR(20) NN DF 'English'</TD></TR>
+    <TR><TD ALIGN="LEFT">Duration_Min</TD><TD ALIGN="LEFT">SMALLINT NN CK 30-300</TD></TR>
+    <TR><TD ALIGN="LEFT">Release_Date</TD><TD ALIGN="LEFT">DATE NULL</TD></TR>
+    <TR><TD ALIGN="LEFT">Poster_URL</TD><TD ALIGN="LEFT">VARCHAR(255) NULL</TD></TR>
+    <TR><TD ALIGN="LEFT" COLSPAN="2" BGCOLOR="#fff7e6"><FONT POINT-SIZE="9">UQ(Title, Language)</FONT></TD></TR>
+  </TABLE>>];
+
+  MOVIE_GENRE [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#7a7a7a">
+    <TR><TD BGCOLOR="#7a7a7a" COLSPAN="2"><FONT COLOR="white"><B>MOVIE_GENRE</B> (multivalued)</FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Movie_ID"><U><I>Movie_ID</I></U></TD><TD ALIGN="LEFT" PORT="Movie_ID_out">INT PK, FK</TD></TR>
+    <TR><TD ALIGN="LEFT"><U>Genre</U></TD><TD ALIGN="LEFT">VARCHAR(20) PK</TD></TR>
+  </TABLE>>];
+
+  SHOWS [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#b3541e">
+    <TR><TD BGCOLOR="#b3541e" COLSPAN="2"><FONT COLOR="white"><B>SHOWS</B> (MOVIE M:N SCREEN)</FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Show_ID"><U>Show_ID</U></TD><TD ALIGN="LEFT" PORT="Show_ID_out">INT PK AI</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Movie_ID"><I>Movie_ID</I></TD><TD ALIGN="LEFT" PORT="Movie_ID_out">INT NN FK</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Screen_ID"><I>Screen_ID</I></TD><TD ALIGN="LEFT" PORT="Screen_ID_out">INT NN FK</TD></TR>
+    <TR><TD ALIGN="LEFT">Show_Time</TD><TD ALIGN="LEFT">DATETIME NN</TD></TR>
+    <TR><TD ALIGN="LEFT">Base_Price</TD><TD ALIGN="LEFT">DECIMAL(7,2) DF 200 CK &gt;0</TD></TR>
+    <TR><TD ALIGN="LEFT" COLSPAN="2" BGCOLOR="#fff7e6"><FONT POINT-SIZE="9">UQ(Screen_ID, Show_Time) · INDEX idx_shows_time</FONT></TD></TR>
+  </TABLE>>];
+
+  BOOKING [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#b3541e">
+    <TR><TD BGCOLOR="#b3541e" COLSPAN="2"><FONT COLOR="white"><B>BOOKING</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Booking_ID"><U>Booking_ID</U></TD><TD ALIGN="LEFT" PORT="Booking_ID_out">INT PK AI</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="User_ID"><I>User_ID</I></TD><TD ALIGN="LEFT" PORT="User_ID_out">INT NN FK</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Show_ID"><I>Show_ID</I></TD><TD ALIGN="LEFT" PORT="Show_ID_out">INT NN FK</TD></TR>
+    <TR><TD ALIGN="LEFT">Booked_At</TD><TD ALIGN="LEFT">DATETIME DF NOW</TD></TR>
+    <TR><TD ALIGN="LEFT">Status</TD><TD ALIGN="LEFT">VARCHAR(10) DF 'CONFIRMED' CK</TD></TR>
+    <TR><TD ALIGN="LEFT">Total_Amount</TD><TD ALIGN="LEFT">DECIMAL(8,2) DF 0 (derived, trigger)</TD></TR>
+  </TABLE>>];
+
+  BOOKING_SEAT [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#7a7a7a">
+    <TR><TD BGCOLOR="#7a7a7a" COLSPAN="2"><FONT COLOR="white"><B>BOOKING_SEAT</B> (BOOKING M:N SEAT)</FONT></TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Booking_ID"><U><I>Booking_ID</I></U></TD><TD ALIGN="LEFT" PORT="Booking_ID_out">INT PK, FK</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Show_ID"><I>Show_ID</I></TD><TD ALIGN="LEFT" PORT="Show_ID_out">INT NN FK</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Screen_ID"><U><I>Screen_ID</I></U></TD><TD ALIGN="LEFT" PORT="Screen_ID_out">INT PK, FK→SEAT</TD></TR>
+    <TR><TD ALIGN="LEFT"><U><I>Row_No</I></U></TD><TD ALIGN="LEFT">CHAR(1) PK, FK→SEAT</TD></TR>
+    <TR><TD ALIGN="LEFT"><U><I>Seat_No</I></U></TD><TD ALIGN="LEFT">TINYINT PK, FK→SEAT</TD></TR>
+    <TR><TD ALIGN="LEFT" COLSPAN="2" BGCOLOR="#f0f0f0"><FONT POINT-SIZE="9">UQ(Show_ID, Screen_ID, Row_No, Seat_No) – no double booking</FONT></TD></TR>
+  </TABLE>>];
+
+  PAYMENT [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" COLOR="#b3541e">
+    <TR><TD BGCOLOR="#b3541e" COLSPAN="2"><FONT COLOR="white"><B>PAYMENT</B></FONT></TD></TR>
+    <TR><TD ALIGN="LEFT"><U>Payment_ID</U></TD><TD ALIGN="LEFT">INT PK AI</TD></TR>
+    <TR><TD ALIGN="LEFT" PORT="Booking_ID"><I>Booking_ID</I></TD><TD ALIGN="LEFT" PORT="Booking_ID_out">INT NN UQ FK (1:1)</TD></TR>
+    <TR><TD ALIGN="LEFT">Amount</TD><TD ALIGN="LEFT">DECIMAL(8,2) NN CK &gt;=0</TD></TR>
+    <TR><TD ALIGN="LEFT">Method</TD><TD ALIGN="LEFT">VARCHAR(10) DF 'UPI' CK</TD></TR>
+    <TR><TD ALIGN="LEFT">Status</TD><TD ALIGN="LEFT">VARCHAR(10) DF 'PAID' CK</TD></TR>
+    <TR><TD ALIGN="LEFT">Paid_At</TD><TD ALIGN="LEFT">DATETIME DF NOW</TD></TR>
+  </TABLE>>];
+
+  SCREEN:Theatre_ID_out:e       -> THEATRE:Theatre_ID:w;
+  USERS:Theatre_ID_out:e        -> THEATRE:Theatre_ID:w [style=dashed];
+  USERS:Referred_By_out:e       -> USERS:User_ID_out:e [style=dashed];
+  SEAT:Screen_ID_out:e          -> SCREEN:Screen_ID:w;
+  MOVIE_GENRE:Movie_ID_out:e    -> MOVIE:Movie_ID:w;
+  SHOWS:Movie_ID_out:e          -> MOVIE:Movie_ID:w;
+  SHOWS:Screen_ID_out:e         -> SCREEN:Screen_ID:w;
+  BOOKING:User_ID_out:e         -> USERS:User_ID:w;
+  BOOKING:Show_ID_out:e         -> SHOWS:Show_ID:w;
+  BOOKING_SEAT:Booking_ID_out:e -> BOOKING:Booking_ID:w;
+  BOOKING_SEAT:Show_ID_out:e    -> SHOWS:Show_ID:w;
+  BOOKING_SEAT:Screen_ID_out:e  -> SEAT:Screen_ID:w;
+  PAYMENT:Booking_ID_out:e      -> BOOKING:Booking_ID:w;
+}
